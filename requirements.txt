@@ -1,0 +1,43 @@
+# JARVIS AI OS -- core Python dependencies
+# Install with: pip install -r requirements.txt
+
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pydantic>=2.5
+
+# Used by agents/ocr/agent.py (tesseract binary must also be installed separately:
+# Windows: https://github.com/UB-Mannheim/tesseract/wiki
+# Linux:   sudo apt install tesseract-ocr
+# Mac:     brew install tesseract
+pillow>=10.0
+pytesseract>=0.3.10
+
+# Used by agents/voice/agent.py -- STT + TTS, both fully offline once installed.
+# faster-whisper downloads model weights on first use (needs network once).
+# On Linux, pyttsx3 also needs the espeak binary: sudo apt install espeak
+# On Windows, pywin32 gives native SAPI5 (better than pyttsx3's SAPI wrapper).
+faster-whisper>=1.0
+pyttsx3>=2.90
+pywin32>=306; sys_platform == "win32"
+
+# Used by agents/voice/agent.py's "listen" action -- live microphone capture
+sounddevice>=0.4.6
+numpy>=1.24
+
+# Used by agents/security/agent.py -- real AES encryption (Fernet/PBKDF2)
+cryptography>=42.0
+
+# Used by runtime/watchdog/watchdog.py -- process supervision
+psutil>=5.9
+
+# Used by desktop_python/desktop_app.py -- native window + system tray
+pywebview>=4.4
+pystray>=0.19
+
+# Optional -- only needed once you wire real backends into the remaining stub agents:
+# ultralytics                        (vision_agent detect_objects)
+# paho-mqtt                          (iot_agent real device control)
+# playwright                         (browser_agent JS-rendered pages)
+
+flask
+psutil

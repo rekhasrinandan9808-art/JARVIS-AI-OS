@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JARVIS AI OS</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Hologram Canvas -->
+      <div id="canvas-container"></div>
+      
+      <!-- JARVIS UI Overlay -->
+      <div id="jarvis-ui">
+        <!-- Top Left - System Diagnostics -->
+        <div class="panel panel-top-left">
+          <div class="panel-title">SYSTEM DIAGNOSTICS</div>
+          <div class="diagnostic-item">
+            <span class="diagnostic-label">CPU:</span>
+            <span class="diagnostic-value" id="cpu">72%</span>
+            <div class="progress-bar"><div class="progress-fill" style="width:72%"></div></div>
+          </div>
+          <div class="diagnostic-item">
+            <span class="diagnostic-label">MEMORY:</span>
+            <span class="diagnostic-value" id="memory">68%</span>
+            <div class="progress-bar"><div class="progress-fill" style="width:68%"></div></div>
+          </div>
+          <div class="diagnostic-item">
+            <span class="diagnostic-label">NETWORK:</span>
+            <span class="diagnostic-value" id="network">89%</span>
+            <div class="progress-bar"><div class="progress-fill" style="width:89%"></div></div>
+          </div>
+          <div class="diagnostic-item">
+            <span class="diagnostic-label">ENERGY:</span>
+            <span class="diagnostic-value" id="energy">94%</span>
+            <div class="progress-bar"><div class="progress-fill" style="width:94%"></div></div>
+          </div>
+        </div>
+
+        <!-- Top Right - Environment -->
+        <div class="panel panel-top-right">
+          <div class="panel-title">ENVIRONMENT</div>
+          <div class="env-item">TEMP: <span>24°C</span></div>
+          <div class="env-item">HUMIDITY: <span>48%</span></div>
+          <div class="env-item">PRESSURE: <span>1012 hPa</span></div>
+          <div class="env-item">WIND: <span>3.2 m/s</span></div>
+        </div>
+
+        <!-- Center - JARVIS AI CORE Title -->
+        <div class="center-title">JARVIS AI CORE</div>
+
+        <!-- Bottom Left - Command Console -->
+        <div class="panel panel-bottom-left">
+          <div class="panel-title">COMMAND CONSOLE</div>
+          <div class="console-line">> INITIALIZING HOLOGRAPHIC INTERFACE...</div>
+          <div class="console-line">> LOADING CORE SYSTEMS...</div>
+          <div class="console-line">> ESTABLISHING CONNECTION...</div>
+          <div class="console-line success">> ALL SYSTEMS OPERATIONAL ✓</div>
+        </div>
+
+        <!-- Bottom Right - System Logs -->
+        <div class="panel panel-bottom-right">
+          <div class="panel-title">SYSTEM LOGS</div>
+          <div class="log-entry">
+            <span class="log-time">18:45:30</span>
+            <span class="log-text">CORE INIT</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">18:45:30</span>
+            <span class="log-text">MEMORY CHECK</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">18:45:30</span>
+            <span class="log-text">NETWORK</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">18:45:31</span>
+            <span class="log-text">HOLOGRAM ENG.</span>
+          </div>
+          <div class="log-entry">
+            <span class="log-time">18:45:32</span>
+            <span class="log-text">AI CORE</span>
+          </div>
+          <div class="log-entry no-errors">NO ERRORS DETECTED</div>
+          <div class="log-footer">18:45:32  SUNDAY, JULY 06, 2026</div>
+        </div>
+
+        <!-- Bottom Center - Status -->
+        <div class="panel panel-bottom-center">
+          <div class="status-item">STATUS: <span class="status-online">ONLINE</span></div>
+          <div class="status-item">NETWORK STATUS: <span class="status-stable">STABLE</span></div>
+          <div class="status-item">SIGNAL STRENGTH: <span>91%</span></div>
+          <div class="status-item">CORE ENERGY: <span>100%</span></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

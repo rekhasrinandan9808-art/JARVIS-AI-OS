@@ -1,0 +1,20 @@
+﻿syntax = "proto3";
+
+package jarvis;
+
+service Orchestrator {
+  rpc ProcessCommand (CommandRequest) returns (CommandResponse);
+  rpc StreamCommand (CommandRequest) returns (stream CommandResponse);
+}
+
+message CommandRequest {
+  string command = 1;
+  string user_id = 2;
+  string session_id = 3;
+}
+
+message CommandResponse {
+  string response = 1;
+  string status = 2;  // "success", "error", "processing"
+  repeated string logs = 3;
+}

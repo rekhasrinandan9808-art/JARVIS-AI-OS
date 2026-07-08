@@ -1,0 +1,111 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+cache/
+temp/
+tmp/
+
+# AI Models
+models/
+weights/
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# Browser
+cookies.json
+browser_profiles/
+playwright-data/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Audio
+*.wav
+*.mp3
+
+# Video
+*.mp4
+*.mov
+
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.pfx
+credentials.json
+token.json
+secrets.json
+
+# OS
+Thumbs.db
+.DS_Store  
+
+# .NET
+bin/
+obj/
+
+# Electron
+out/
+release/
+
+# Test caches
+.pytest_cache/
+.mypy_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Runtime
+runtime/logs/
+runtime/cache/
+
+# VS Code
+.history/
+
+# macOS / Linux
+.AppleDouble
+.LSOverride
+
+# Windows
+Desktop.ini
+
+# Local configuration
+*.local

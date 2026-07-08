@@ -1,0 +1,640 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JARVIS AI OS - Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0A0A1A;
+            color: #FFFFFF;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Hologram Container */
+        #hologramContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        #hologramContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Status Bar */
+        #statusBar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 26, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(42, 42, 78, 0.5);
+        }
+        #statusBar .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        #statusBar .left h1 {
+            color: #00D4FF;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        #statusBar .left .version {
+            color: #666;
+            font-size: 11px;
+        }
+        #statusBar .right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.online {
+            background: #00FF88;
+            box-shadow: 0 0 10px #00FF8844;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.offline {
+            background: #FF6B6B;
+        }
+        .status-dot.connecting {
+            background: #FFD93D;
+            animation: pulse 0.8s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+        }
+        .status-text {
+            font-size: 12px;
+            color: #AAA;
+        }
+        .status-text.online { color: #00FF88; }
+        .status-text.offline { color: #FF6B6B; }
+        .status-text.connecting { color: #FFD93D; }
+        
+        /* Floating Chat */
+        #floatingChat {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            width: 420px;
+            max-height: 550px;
+            background: rgba(10, 10, 26, 0.95);
+            border-radius: 16px;
+            border: 1px solid #2A2A4E;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 200px;
+        }
+        #floatingChat.minimized {
+            height: 48px !important;
+            max-height: 48px !important;
+            min-height: 48px !important;
+            width: 180px !important;
+        }
+        #floatingChat.minimized #chatMessages,
+        #floatingChat.minimized #chatInputArea,
+        #floatingChat.minimized #resizeHandle {
+            display: none;
+        }
+        #floatingChat.minimized #chatHeader .status {
+            display: none;
+        }
+        
+        #chatHeader {
+            background: rgba(26, 26, 46, 0.95);
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            border-bottom: 1px solid #2A2A4E;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        #chatHeader:active { cursor: grabbing; }
+        #chatHeader .title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #chatHeader .title h3 {
+            color: #00D4FF;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        #chatHeader .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        #chatHeader .status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        #chatHeader .status .dot.online { background: #00FF88; }
+        #chatHeader .status .dot.offline { background: #FF6B6B; }
+        #chatHeader .status .dot.thinking { background: #FFD93D; animation: pulse 0.8s infinite; }
+        #chatHeader .status .label {
+            font-size: 11px;
+            color: #AAA;
+        }
+        #chatHeader .controls button {
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0 4px;
+        }
+        #chatHeader .controls button:hover { color: #FFF; }
+        #chatHeader .controls .close-btn:hover { color: #FF6B6B; }
+        
+        #chatMessages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-height: 80px;
+            max-height: 350px;
+        }
+        #chatMessages::-webkit-scrollbar { width: 3px; }
+        #chatMessages::-webkit-scrollbar-thumb { background: #2A2A4E; border-radius: 2px; }
+        
+        .message {
+            max-width: 85%;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #00D4FF;
+            color: #0A0A1A;
+            border-bottom-right-radius: 3px;
+        }
+        .message.jarvis {
+            align-self: flex-start;
+            background: #1A1A2E;
+            color: #FFFFFF;
+            border-bottom-left-radius: 3px;
+            border: 1px solid #2A2A4E;
+        }
+        .message.system {
+            align-self: center;
+            background: transparent;
+            color: #666;
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+        .message .sender {
+            font-size: 9px;
+            font-weight: 600;
+            margin-bottom: 1px;
+            opacity: 0.6;
+        }
+        .message.user .sender { color: #0A0A1A; }
+        .message.jarvis .sender { color: #00D4FF; }
+        
+        #chatInputArea {
+            padding: 6px 10px 10px 10px;
+            border-top: 1px solid #2A2A4E;
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            background: rgba(10, 10, 26, 0.9);
+        }
+        #chatInputArea textarea {
+            flex: 1;
+            background: #0A0A1A;
+            border: 1px solid #2A2A4E;
+            border-radius: 6px;
+            color: #FFFFFF;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            min-height: 32px;
+            max-height: 60px;
+        }
+        #chatInputArea textarea:focus { border-color: #00D4FF; }
+        #chatInputArea textarea::placeholder { color: #555; }
+        #chatInputArea button {
+            background: #00D4FF;
+            color: #0A0A1A;
+            border: none;
+            border-radius: 6px;
+            padding: 0 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #chatInputArea button:hover { background: #00CCEE; }
+        #chatInputArea button:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        #resizeHandle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 14px;
+            height: 14px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, #2A2A4E 50%);
+            border-bottom-right-radius: 16px;
+        }
+        
+        #toggleChatBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+            background: #00D4FF;
+            color: #0A0A1A;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            display: none;
+        }
+        #floatingChat.minimized ~ #toggleChatBtn { display: flex; align-items: center; justify-content: center; }
+        
+        /* Manual reconnect button */
+        #reconnectBtn {
+            background: #2A2A4E;
+            color: #FFF;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        #reconnectBtn:hover {
+            background: #3A3A5E;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Status Bar -->
+    <div id="statusBar">
+        <div class="left">
+            <h1>🔷 JARVIS AI OS</h1>
+            <span class="version">v1.0</span>
+        </div>
+        <div class="right">
+            <span class="status-dot offline" id="statusDot"></span>
+            <span class="status-text offline" id="statusText">Offline</span>
+            <span style="color:#444;font-size:11px;margin-left:8px;">|</span>
+            <span style="color:#444;font-size:11px;" id="serverStatus">Python: ⚪</span>
+            <button id="reconnectBtn" onclick="reconnect()">⟳</button>
+        </div>
+    </div>
+
+    <!-- Hologram -->
+    <div id="hologramContainer">
+        <iframe id="hologramFrame" src="http://localhost:5173"></iframe>
+    </div>
+
+    <!-- Toggle Button -->
+    <button id="toggleChatBtn" onclick="toggleChat()">💬</button>
+
+    <!-- Floating Chat -->
+    <div id="floatingChat">
+        <div id="chatHeader">
+            <div class="title">
+                <h3>💬 JARVIS Chat</h3>
+                <div class="status">
+                    <span class="dot offline" id="chatDot"></span>
+                    <span class="label" id="chatStatusLabel">Offline</span>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="toggleChat()" title="Minimize">─</button>
+                <button class="close-btn" onclick="closeChat()" title="Close">✕</button>
+            </div>
+        </div>
+        <div id="chatMessages">
+            <div class="message system">🔷 JARVIS AI OS initialized.</div>
+        </div>
+        <div id="chatInputArea">
+            <textarea id="chatInput" rows="1" placeholder="Type a message..." 
+                      onkeydown="handleKeyDown(event)"></textarea>
+            <button id="sendButton" onclick="sendMessage()">➤</button>
+        </div>
+        <div id="resizeHandle"></div>
+    </div>
+
+    <script>
+        // ============================================
+        // JARVIS Web Client - Fixed Connection
+        // ============================================
+        
+        const API_URL = 'http://localhost:50051';
+        let isConnected = false;
+        let isProcessing = false;
+        let isMinimized = false;
+        let reconnectAttempts = 0;
+        let connectionInterval = null;
+
+        // DOM Elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const chatDot = document.getElementById('chatDot');
+        const chatStatusLabel = document.getElementById('chatStatusLabel');
+        const serverStatus = document.getElementById('serverStatus');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const floatingChat = document.getElementById('floatingChat');
+        const toggleBtn = document.getElementById('toggleChatBtn');
+        const chatHeader = document.getElementById('chatHeader');
+
+        // ============================================
+        // Set Status
+        // ============================================
+        function setStatus(state, message) {
+            const statusMap = {
+                'online': { dot: 'online', text: 'online', color: '#00FF88' },
+                'offline': { dot: 'offline', text: 'offline', color: '#FF6B6B' },
+                'connecting': { dot: 'connecting', text: 'connecting', color: '#FFD93D' },
+                'thinking': { dot: 'thinking', text: 'thinking', color: '#FFD93D' }
+            };
+            
+            const s = statusMap[state] || statusMap.offline;
+            statusDot.className = `status-dot ${s.dot}`;
+            statusText.className = `status-text ${s.text}`;
+            statusText.textContent = message || s.text.charAt(0).toUpperCase() + s.text.slice(1);
+            chatDot.className = `dot ${s.dot}`;
+            chatStatusLabel.textContent = message || s.text.charAt(0).toUpperCase() + s.text.slice(1);
+        }
+
+        // ============================================
+        // Connect to Python Server
+        // ============================================
+        async function connectToPython() {
+            try {
+                setStatus('connecting', 'Connecting...');
+                serverStatus.textContent = 'Python: ⚡';
+                serverStatus.style.color = '#FFD93D';
+
+                console.log('🔌 Attempting to connect to Python server...');
+                
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    isConnected = true;
+                    reconnectAttempts = 0;
+                    setStatus('online', 'Online');
+                    serverStatus.textContent = 'Python: 🟢';
+                    serverStatus.style.color = '#00FF88';
+                    addMessage('🔷 System', 'Connected to JARVIS AI engine.', 'system');
+                    console.log('✅ Connected to Python server');
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                isConnected = false;
+                reconnectAttempts++;
+                setStatus('offline', 'Offline');
+                serverStatus.textContent = 'Python: 🔴';
+                serverStatus.style.color = '#FF6B6B';
+                console.error('❌ Connection error:', error.message);
+                
+                if (reconnectAttempts === 1 || reconnectAttempts % 5 === 0) {
+                    addMessage('⚠️ System', `Python server offline. Attempt ${reconnectAttempts}...`, 'system');
+                }
+                return false;
+            }
+        }
+
+        // ============================================
+        // Manual Reconnect
+        // ============================================
+        async function reconnect() {
+            addMessage('🔄 System', 'Manually reconnecting...', 'system');
+            await connectToPython();
+        }
+
+        // ============================================
+        // Chat Functions
+        // ============================================
+        function toggleChat() {
+            isMinimized = !isMinimized;
+            floatingChat.classList.toggle('minimized', isMinimized);
+            toggleBtn.style.display = isMinimized ? 'flex' : 'none';
+            if (!isMinimized) chatInput.focus();
+        }
+
+        function closeChat() { floatingChat.style.display = 'none'; }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function addMessage(sender, text, type = 'jarvis') {
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            if (type !== 'system') {
+                const senderSpan = document.createElement('div');
+                senderSpan.className = 'sender';
+                senderSpan.textContent = sender;
+                div.appendChild(senderSpan);
+            }
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            div.appendChild(textSpan);
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // ============================================
+        // Send Message
+        // ============================================
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message || isProcessing) return;
+
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            addMessage('You', message, 'user');
+
+            // Try to connect if offline
+            if (!isConnected) {
+                const connected = await connectToPython();
+                if (!connected) {
+                    addMessage('⚠️ System', 'Python server offline. Please start the server.', 'system');
+                    return;
+                }
+            }
+
+            isProcessing = true;
+            sendButton.disabled = true;
+            chatInput.disabled = true;
+            setStatus('thinking', 'Thinking...');
+
+            try {
+                const response = await fetch(`${API_URL}/command`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        command: message,
+                        user_id: 'web_user',
+                        session_id: 'default'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                addMessage('🤖 JARVIS', data.response || 'No response', 'jarvis');
+                setStatus('online', 'Online');
+            } catch (error) {
+                addMessage('❌ Error', error.message, 'system');
+                isConnected = false;
+                setStatus('offline', 'Offline');
+                serverStatus.textContent = 'Python: 🔴';
+                serverStatus.style.color = '#FF6B6B';
+            } finally {
+                isProcessing = false;
+                sendButton.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // ============================================
+        // Auto-Connect on Load
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial connection
+            setTimeout(() => {
+                connectToPython();
+            }, 500);
+            
+            // Auto-reconnect every 10 seconds if offline
+            connectionInterval = setInterval(() => {
+                if (!isConnected) {
+                    connectToPython();
+                }
+            }, 10000);
+            
+            chatInput.focus();
+        });
+
+        // Ctrl+Enter shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Show floating chat after load
+        setTimeout(() => { floatingChat.style.display = 'flex'; }, 300);
+
+        // ============================================
+        // Drag to Move
+        // ============================================
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        chatHeader.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.controls')) return;
+            isDragging = true;
+            offsetX = e.clientX - floatingChat.getBoundingClientRect().left;
+            offsetY = e.clientY - floatingChat.getBoundingClientRect().top;
+            floatingChat.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+            x = Math.max(0, Math.min(window.innerWidth - floatingChat.offsetWidth, x));
+            y = Math.max(0, Math.min(window.innerHeight - floatingChat.offsetHeight, y));
+            floatingChat.style.left = x + 'px';
+            floatingChat.style.right = 'auto';
+            floatingChat.style.bottom = 'auto';
+            floatingChat.style.top = y + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            floatingChat.style.cursor = '';
+        });
+
+        // Resize
+        const resizeHandle = document.getElementById('resizeHandle');
+        let isResizing = false;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isResizing = true;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            const rect = floatingChat.getBoundingClientRect();
+            const newWidth = Math.max(300, e.clientX - rect.left);
+            const newHeight = Math.max(200, e.clientY - rect.top);
+            floatingChat.style.width = newWidth + 'px';
+            floatingChat.style.height = newHeight + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { isResizing = false; });
+    </script>
+</body>
+</html>
